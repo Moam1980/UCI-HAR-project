@@ -1,0 +1,55 @@
+# 1. Merge the training and test sets to create one data set
+
+dt1 <- read.table("UCI HAR project/UCI HAR Dataset/train/X_train.txt")
+dt2 <- read.table("UCI HAR project/UCI HAR Dataset/test/X_test.txt")
+X <- rbind(dt1, dt2)
+
+dt1 <- read.table("UCI HAR project/UCI HAR Dataset/train/subject_train.txt")
+dt2 <- read.table("UCI HAR project/UCI HAR Dataset/test/subject_test.txt")
+S <- rbind(dt1, dt2)
+
+dt1 <- read.table("UCI HAR project/UCI HAR Dataset/train/y_train.txt")
+dt2 <- read.table("UCI HAR project/UCI HAR Dataset/test/y_test.txt")
+Y <- rbind(dt1, dt2)
+
+# 2. Reads features.txt and extracts only the measurements on the mean and standard deviation for each measurement
+
+f <- read.table("UCI HAR project/UCI HAR Dataset/features.txt")
+fm <- grep("-mean\\(\\)|-std\\(\\)", f[, 2])
+X <- X[, fm]
+names(X) <- f[fm, 2]
+names(X) <- gsub("\\(|\\)", "", names(X))
+names(X) <- tolower(names(X))
+
+# 3. Reads activity_labels.txt and applies descriptive activity names to name the activities in the data set
+
+ac <- read.table("UCI HAR project/UCI HAR Dataset/activity_labels.txt")
+ac[, 2] = gsub("_", "", tolower(as.character(ac[, 2])))
+Y[,1] = ac[Y[,1], 2]
+names(Y) <- "activity"
+
+# 4. Labels the data set with descriptive names appropriately
+
+names(S) <- "subject"
+cleaned <- cbind(S, Y, X)
+write.table(cleaned, "UCI HAR project/UCI HAR Dataset/merged_labeled_data.txt", row.name=FALSE)
+
+# 5. Create a 2nd independent tidy data set with the average of each measurement for each activity and each subject
+
+s2 = unique(S)[,1]
+sno = length(unique(S)[,1])
+ano = length(ac[,1])
+cno = dim(cleaned)[2]
+result = cleaned[1:(sno*ano), ]
+
+row = 1
+for (s in 1:sno) {
+    for (a in 1:ano) {
+        result[row, 1] = s2[s]
+        result[row, 2] = ac[a, 2]
+        dt <- cleaned[cleaned$subject==s & cleaned$activity==ac[a, 2], ]
+        result[row, 3:cno] <- colMeans(dt[, 3:cno])
+        row = row+1
+    }
+}
+write.table(result, "UCI HAR project/UCI HAR Dataset/avrg_data_set.txt", row.name=FALSE)
