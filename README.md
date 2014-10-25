@@ -35,3 +35,6 @@ Put run_analysis.R into working directory\UCI HAR project
 In RStudio: source("UCI HAR project/run_analysis.R")
 
 run result <- read.table("UCI HAR project/UCI HAR Dataset/avrg_data_set.txt") to read the final data.
+
+Regards,
+Mohammad.
